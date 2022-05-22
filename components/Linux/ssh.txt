@@ -1,0 +1,9 @@
+ssh 免密配置
+
+ssh-keygen -t rsa
+
+cd ~/.ssh
+
+ssh-copy-id hadoop102
+ssh-copy-id hadoop103
+ssh-copy-id hadoop104

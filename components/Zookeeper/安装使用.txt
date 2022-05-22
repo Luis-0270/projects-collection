@@ -1,0 +1,43 @@
+1、放入/opt/software
+/opt/software/apache-zookeeper-3.5.7-bin.tar.gz
+
+2、解压到/opt/module
+tar -zxvf apache-zookeeper-3.5.7-bin.tar.gz -C /opt/module/
+
+3、改名
+mv apache-zookeeper-3.5.7-bin/ zookeeper-3.5.7
+
+4、分发到hadoop103 hadoop104
+xsync zookeeper-3.5.7/
+
+5、配置服务器编号
+cd zookeeper-3.5.7/
+mkdir zkData
+vim myid
+162
+
+分发
+xsync myid
+改为103 104
+
+6、配置zoo.cfg文件
+cd /opt/module/zookeeper-3.5.7/conf
+mv zoo_sample.cfg zoo.cfg
+vim zoo.cfg
+dataDir=/opt/module/zookeeper-3.5.7/zkData
+server.102=hadoop102:2888:3888
+server.103=hadoop103:2888:3888
+server.104=hadoop104:2888:3888
+
+分发
+xsync zoo.cfg
+
+7、启动
+bin/zkServer.sh start
+
+8、脚本
+zk.sh
+
+
+
+

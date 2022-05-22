@@ -1,0 +1,14 @@
+kafka-topics.sh --bootstrap-server hadoop162:9092 --create --topic first
+kafka-topics.sh --bootstrap-server hadoop162:9092 --create --topic first1 --partitions 3 --replication-factor 2
+kafka-topics.sh --bootstrap-server hadoop162:9092 --create --topic topic_log
+kafka-topics.sh --bootstrap-server hadoop162:9092 --describe --topic first
+
+kafka-topics.sh --bootstrap-server hadoop102:9092 --list
+
+kafka-console-producer.sh --broker-list hadoop162:9092 --topic ods_base_log
+
+kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic ods_base_log --from-beginning
+kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic ods_base_log
+kafka-console-consumer.sh --bootstrap-server hadoop162:9092 --topic topic_log
+
+

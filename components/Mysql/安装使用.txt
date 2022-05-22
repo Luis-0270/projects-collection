@@ -1,0 +1,61 @@
+1、卸载自带的Mysql-libs
+rpm -qa | grep -i -E mysql\|mariadb | xargs -n1 sudo rpm -e --nodeps
+
+2、放入/opt/software
+01_mysql-community-common-5.7.16-1.el7.x86_64.rpm
+02_mysql-community-libs-5.7.16-1.el7.x86_64.rpm
+03_mysql-community-libs-compat-5.7.16-1.el7.x86_64.rpm
+04_mysql-community-client-5.7.16-1.el7.x86_64.rpm
+05_mysql-community-server-5.7.16-1.el7.x86_64.rpm
+mysql-connector-java-5.1.27-bin.jar
+
+3、安装MySQL
+①安装mysql依赖
+sudo rpm -ivh 01_mysql-community-common-5.7.16-1.el7.x86_64.rpm
+sudo rpm -ivh 02_mysql-community-libs-5.7.16-1.el7.x86_64.rpm
+sudo rpm -ivh 03_mysql-community-libs-compat-5.7.16-1.el7.x86_64.rpm
+
+②安装mysql-client
+sudo rpm -ivh 04_mysql-community-client-5.7.16-1.el7.x86_64.rpm
+
+③安装mysql-server
+sudo yum install libaio
+sudo yum install net-tools
+sudo rpm -ivh 05_mysql-community-server-5.7.16-1.el7.x86_64.rpm
+
+④启动mysql
+sudo systemctl start mysqld
+
+⑤查看mysql密码
+sudo cat /var/log/mysqld.log | grep password
+
+4、配置MySQL
+（1）用刚刚查到的密码进入mysql（如果报错，给密码加单引号）
+mysql -uroot -p'password'
+（2）设置复杂密码(由于mysql密码策略，此密码必须足够复杂)
+mysql> set password=password("Qs23=zs32");
+（3）更改mysql密码策略
+mysql> set global validate_password_length=4;
+mysql> set global validate_password_policy=0;
+（4）设置简单好记的密码
+mysql> set password=password("123123");
+（5）进入msyql库
+mysql> use mysql
+（6）查询user表
+mysql> select user, host from user;
+（7）修改user表，把Host表内容修改为%
+mysql> update user set host="%" where user="root";
+（8）刷新
+mysql> flush privileges;
+（9）退出
+mysql> quit;
+
+
+
+
+
+
+
+
+
+

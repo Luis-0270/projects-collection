@@ -1,0 +1,199 @@
+1、放入/opt/software
+/opt/software/hadoop-3.1.3.tar.gz
+
+2、解压到/opt/module
+tar -zxvf hadoop-3.1.3.tar.gz -C /opt/module/
+
+3、配置环境变量
+sudo vim /etc/profile.d/my_env.sh
+#HADOOP_HOME
+export HADOOP_HOME=/opt/module/hadoop-3.1.3
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+
+4、分发到hadoop163 hadoop164
+sudo /home/ludonghua/bin/xsync /etc/profile.d/my_env.sh
+
+source /etc/profile.d/my_env.sh
+
+5、配置集群
+cd /opt/module/hadoop-3.1.3/etc/hadoop
+
+①配置core-site.xml
+vim core-site.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<!-- 指定NameNode的地址 -->
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://hadoop102:8020</value>
+	</property>
+	<!-- 指定hadoop数据的存储目录 -->
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/opt/module/hadoop-3.1.3/data</value>
+	</property>
+
+	<!-- 配置HDFS网页登录使用的静态用户为ludonghua -->
+    <property>
+        <name>hadoop.http.staticuser.user</name>
+        <value>ludonghua</value>
+	</property>
+
+	<!-- 配置该ludonghua(superUser)允许通过代理访问的主机节点 -->
+    <property>
+        <name>hadoop.proxyuser.ludonghua.hosts</name>
+        <value>*</value>
+	</property>
+	<!-- 配置该ludonghua(superUser)允许通过代理用户所属组 -->
+    <property>
+        <name>hadoop.proxyuser.ludonghua.groups</name>
+        <value>*</value>
+	</property>
+	<!-- 配置该ludonghua(superUser)允许通过代理的用户-->
+    <property>
+        <name>hadoop.proxyuser.ludonghua.users</name>
+        <value>*</value>
+	</property>
+</configuration>
+
+②配置hdfs-site.xml
+vim hdfs-site.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<!-- nn web端访问地址-->
+	<property>
+        <name>dfs.namenode.http-address</name>
+        <value>hadoop102:9870</value>
+    </property>
+
+	<!-- 2nn web端访问地址-->
+    <property>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>hadoop104:9868</value>
+    </property>
+
+    <!-- 测试环境指定HDFS副本的数量1 -->
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+</configuration>
+
+③配置yarn-site.xml
+vim yarn-site.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<!-- 指定MR走shuffle -->
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+
+    <!-- 指定ResourceManager的地址-->
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>hadoop103</value>
+    </property>
+
+    <!-- 环境变量的继承 -->
+    <property>
+        <name>yarn.nodemanager.env-whitelist</name>
+        <value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME</value>
+    </property>
+
+    <!-- yarn容器允许分配的最大最小内存 -->
+    <property>
+        <name>yarn.scheduler.minimum-allocation-mb</name>
+        <value>512</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.maximum-allocation-mb</name>
+        <value>4096</value>
+    </property>
+
+    <!-- yarn容器允许管理的物理内存大小 -->
+    <property>
+        <name>yarn.nodemanager.resource.memory-mb</name>
+        <value>4096</value>
+    </property>
+
+    <!-- 关闭yarn对物理内存和虚拟内存的限制检查 -->
+    <property>
+        <name>yarn.nodemanager.pmem-check-enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>false</value>
+    </property>
+
+    <!-- 开启日志聚集功能 -->
+    <property>
+        <name>yarn.log-aggregation-enable</name>
+        <value>true</value>
+    </property>
+
+    <!-- 设置日志聚集服务器地址 -->
+    <property>
+        <name>yarn.log.server.url</name>
+        <value>http://hadoop102:19888/jobhistory/logs</value>
+    </property>
+
+    <!-- 设置日志保留时间为7天 -->
+    <property>
+        <name>yarn.log-aggregation.retain-seconds</name>
+        <value>604800</value>
+    </property>
+</configuration>
+
+④配置mapred-site.xml
+vim mapred-site.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<!-- 指定MapReduce程序运行在Yarn上 -->
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+
+    <!-- 历史服务器端地址 -->
+    <property>
+        <name>mapreduce.jobhistory.address</name>
+        <value>hadoop102:10020</value>
+    </property>
+
+    <!-- 历史服务器web端地址 -->
+    <property>
+        <name>mapreduce.jobhistory.webapp.address</name>
+        <value>hadoop102:19888</value>
+    </property>
+</configuration>
+
+⑤配置workers
+vim /opt/module/hadoop-3.1.3/etc/hadoop/workers
+hadoop102
+hadoop103
+hadoop104
+
+6、分发到hadoop103 hadoop104
+xsync /opt/module/hadoop-3.1.3/
+
+7、启动集群
+第一次启动集群
+bin/hdfs namenode -format
+sbin/start-dfs.sh
+sbin/start-yarn.sh
+
+8、群起脚本
+hadoop.sh
+
+

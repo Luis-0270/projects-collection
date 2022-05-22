@@ -1,0 +1,94 @@
+1、放入/opt/software
+/opt/software/apache-flume-1.9.0-bin.tar.gz
+
+2、解压到/opt/module
+tar -zxvf apache-flume-1.9.0-bin.tar.gz -C /opt/module/
+
+3、改名
+mv /opt/module/apache-flume-1.9.0-bin /opt/module/flume
+
+4、将lib文件夹下的guava-11.0.2.jar删除以兼容Hadoop 3.1.3
+rm /opt/module/flume/lib/guava-11.0.2.jar
+
+5、修改conf目录下的log4j.properties配置文件，配置日志文件路径
+vim /opt/module/flume/conf/log4j.properties
+flume.log.dir=/opt/module/flume/logs
+
+#####################
+Flume堆内存通常设置为4G或更高，配置方式如下：
+修改/opt/module/flume/conf/flume-env.sh文件，配置如下参数（虚拟机环境暂不配置，千万别配）
+vim /opt/module/flume/conf/flume-env.sh
+export JAVA_OPTS="-Xms4096m -Xmx4096m -Dcom.sun.management.jmxremote"
+#####################
+
+同步
+xsync /opt/module/flume/
+
+拦截器等
+需要先将打好的包放入到hadoop102的/opt/module/flume/lib文件夹下面
+分发
+
+6、启动测试
+
+cd /opt/module/flume
+vim job/file_to_kafka.conf
+bin/flume-ng agent -n a1 -c conf/ -f job/file_to_kafka.conf -Dflume.root.logger=info,console
+
+vim job/kafka_to_hdfs.conf
+bin/flume-ng agent -n a1 -c conf/ -f job/kafka_to_hdfs.conf -Dflume.root.logger=info,console
+
+vim job/kafka_to_hdfs_db.conf
+bin/flume-ng agent -n a1 -c conf/ -f job/kafka_to_hdfs_db.conf -Dflume.root.logger=info,console
+
+7、脚本
+日志同步
+f1.sh
+f2.sh
+
+增量表同步
+f3.sh
+
+
+###########################
+启动
+hadoop.sh start
+zk start
+kafka.sh start
+f1.sh start
+f2.sh start
+lg.sh
+
+用户行为日志采集
+162 163同时生成日志，注意修改日期后同步
+6月15日
+cd /opt/module/applog
+vim application.yml
+修改日期
+xsync ./application.yml
+
+
+业务数据采集
+全量表
+只需执行一次
+gen_import_config.py 传入库名和表名，生成json文件
+gen_import_config.sh 导入全部全量表
+
+mysql_to_hdfs_full.sh all 日期 (首次全部同步，之后按天同步)
+
+增量表
+首次同步
+vim /opt/module/maxwell/config.properties
+mock_date=2020-06-14
+
+mxw.sh start
+f3.sh start
+mysql_to_kafka_inc_init.sh all
+
+增量同步
+vim /opt/module/maxwell/config.properties
+mock_date=2020-06-15
+重启mxw.sh restart
+
+cd /opt/module/db_log
+vim application.properties
+修改日期 重置改为0

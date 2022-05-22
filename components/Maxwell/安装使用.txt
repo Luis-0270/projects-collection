@@ -1,0 +1,83 @@
+1、放入/opt/software
+/opt/software/maxwell/maxwell-1.29.2.tar.gz
+
+2、解压到/opt/module
+tar -zxvf maxwell-1.29.2.tar.gz -C /opt/module/
+
+3、改名
+mv maxwell-1.29.2/ maxwell
+
+4、配置MySQL
+1）修改MySQL配置文件/etc/my.cnf
+sudo vim /etc/my.cnf
+2）增加如下配置
+[mysqld]
+
+#数据库id
+server-id = 1
+#启动binlog，该参数的值会作为binlog的文件名
+log-bin=mysql-bin
+#binlog类型，maxwell要求为row类型
+binlog_format=row
+#启用binlog的数据库，需根据实际情况作出修改
+binlog-do-db=gmall
+3）重启MySQL服务
+sudo systemctl restart mysqld
+
+5、创建Maxwell所需数据库和用户
+1）创建数据库
+msyql> CREATE DATABASE maxwell;
+2）调整MySQL数据库密码级别
+mysql> set global validate_password_policy=0;
+mysql> set global validate_password_length=4;
+3）创建Maxwell用户并赋予其必要权限
+mysql> CREATE USER 'maxwell'@'%' IDENTIFIED BY 'maxwell';
+mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'%';
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
+
+6、配置Maxwell
+1）修改Maxwell配置文件名称
+cd /opt/module/maxwell
+cp config.properties.example config.properties
+2）修改Maxwell配置文件
+vim config.properties
+log_level=info
+
+producer=kafka
+kafka.bootstrap.servers=hadoop102:9092,hadoop103:9092,hadoop104:9092
+
+#kafka topic动态配置
+
+#kafka_topic=%{table}
+kafka_topic=topic_db
+
+# mysql login info
+host=hadoop102
+user=maxwell
+password=maxwell
+jdbc_options=useSSL=false&serverTimezone=Asia/Shanghai
+
+#表过滤，只同步特定的13张表
+#filter= include:gmall.cart_info,include:gmall.comment_info,include:gmall.coupon_use,include:gmall.favor_info,include:gmall.order_detail,include:gmall.order_detail_activity,include:gmall.order_detail_coupon,include:gmall.order_info,include:gmall.order_refund_info,include:gmall.order_status_log,include:gmall.payment_info,include:gmall.refund_payment,include:gmall.user_info
+
+
+7、启停
+1）启动Maxwell
+/opt/module/maxwell/bin/maxwell --config /opt/module/maxwell/config.properties --daemon
+2）停止Maxwell
+ps -ef | grep maxwell | grep -v grep | grep maxwell | awk '{print $2}' | xargs kill -9
+
+8、脚本
+vim maxwell.sh
+maxwell.sh start
+
+9、Maxwell提供了bootstrap功能来进行历史数据的全量同步
+/opt/module/maxwell/bin/maxwell-bootstrap --database gmall --table user_info --config /opt/module/maxwell/config.properties
+
+增量表全数据初始化
+mysql_to_kafka_inc_init.sh all
+
+######################
+#该日期须和/opt/module/db_log/application.properties中的mock.date参数保持一致
+mock_date=2020-06-14
+

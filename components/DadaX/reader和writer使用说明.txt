@@ -1,0 +1,217 @@
+Reader和Writer的具体参数可参考官方文档，地址如下：
+https://github.com/alibaba/DataX/blob/master/README.md
+
+vim /opt/module/datax/job/base_province.json
+MySQLReader-to-HDFSWriter之TableMode
+使用DataX向HDFS同步数据时，需确保目标路径已存在：hadoop fs -mkdir /base_province
+{
+    "job": {
+        "content": [
+            {
+                "reader": {
+                    "name": "mysqlreader", Reader名称，固定写法
+                    "parameter": {
+                        "column": [
+                            "id",
+                            "name",
+                            "region_id",
+                            "area_code",
+                            "iso_code",
+                            "iso_3166_2"
+                        ], 需要同步的列，["*"]代表所有列
+                        "where": "id>=3", where过滤条件
+                        "connection": [
+                            {
+                                "jdbcUrl": [
+                                    "jdbc:mysql://hadoop102:3306/gmall"
+                                ], 数据库JDBC URL
+                                "table": [
+                                    "base_province"
+                                ] 需要同步的表名
+                            }
+                        ],
+                        "password": "000000", 数据库密码
+                        "splitPk": "", 分片字段，如果指定该字段，则DataX会启动多
+                        个Task同步数据；若未指定(不提供splitPk或splitPk值为空)，
+                        则只会有单个Task。该参数只在TableMode下有效，在
+                        QuerySQLMode下，只会有单个Task。
+                        "username": "root" 数据库用户名
+                    }
+                },
+                "writer": {
+                    "name": "hdfswriter", Writer名称，固定写法
+                    "parameter": {
+                        "column": [
+                            {
+                                "name": "id",
+                                "type": "bigint"
+                            },
+                            {
+                                "name": "name",
+                                "type": "string"
+                            },
+                            {
+                                "name": "region_id",
+                                "type": "string"
+                            },
+                            {
+                                "name": "area_code",
+                                "type": "string"
+                            },
+                            {
+                                "name": "iso_code",
+                                "type": "string"
+                            },
+                            {
+                                "name": "iso_3166_2",
+                                "type": "string"
+                            }
+                        ], 列信息，包含列名和类型。类型为Hive表字段类型，目前不支
+                        持decimal、binary、arrays、maps、structs等类型。若
+                        Mysql中包含decimal类型字段，此处可将该字段类型设置为
+                        string，hive表中扔设置为decimal类型。
+                        "compress": "gzip", HDFS压缩类型，text文件支持gzip、
+                        bzip2; orc文件支持有NONE、SNAPPY
+                        "defaultFS": "hdfs://hadoop102:8020", HDFS文件系统
+                        namenode节点地址
+                        "fieldDelimiter": "\t", HDFS文件字段分隔符
+                        "fileName": "base_province", HDFS文件名前缀
+                        "fileType": "text", HDFS文件类型，目前支持"text","orc"
+                        "path": "/base_province", HDFS文件系统目标路径
+                        "writeMode": "append" 数据写入模式，append：追加；
+                        nonConflict：若写入目录有同名(前缀相同)文件，报错。
+                    }
+                }
+            }
+        ],
+        "setting": {
+            "speed": {
+                "channel": 1 并发数，最终的并发数不一定是该值
+            } 传输速度配置
+        }
+    }
+}
+
+MySQLReader-to-HDFSWriter之QuerySQLMode
+"reader": {
+    "name": "mysqlreader",
+    "parameter": {
+        "connection": [
+            {
+                "jdbcUrl": [
+                    "jdbc:mysql://hadoop102:3306/gmall"
+                ],
+                "querySql": [
+                    "select id,name,region_id,area_code,iso_code,iso_3166_2
+                    from base_province where id>=3"
+                ]
+            }
+        ],
+        "password": "000000",
+        "username": "root"
+    }
+}
+
+
+注意事项：
+HFDS Writer并未提供nullFormat参数：也就是用户并不能自定义null值写到HFDS文件
+中的存储格式。默认情况下，HFDS Writer会将null值存储为空字符串（''），
+而Hive默认的null值存储格式为\N。所以后期将DataX同步的文件导入Hive表就会出现问题。
+解决该问题的方案有两个：
+一是修改DataX HDFS Writer的源码，增加自定义null值存储格式的逻辑，
+可参考https://blog.csdn.net/u010834071/article/details/105506580。
+二是在Hive中建表时指定null值存储格式为空字符串（''），例如：
+DROP TABLE IF EXISTS base_province;
+CREATE EXTERNAL TABLE base_province
+(
+    `id`         STRING COMMENT '编号',
+    `name`       STRING COMMENT '省份名称',
+    `region_id`  STRING COMMENT '地区ID',
+    `area_code`  STRING COMMENT '地区编码',
+    `iso_code`   STRING COMMENT '旧版ISO-3166-2编码，供可视化使用',
+    `iso_3166_2` STRING COMMENT '新版IOS-3166-2编码，供可视化使用'
+) COMMENT '省份表'
+    ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+    NULL DEFINED AS ''
+    LOCATION '/base_province/';
+
+
+执行：
+cd /opt/module/datax
+python bin/datax.py job/base_province.json
+
+vim /opt/module/datax/job/test_province.json
+HDFSReader-to-MySQLWriter
+{
+    "job": {
+        "content": [
+            {
+                "reader": {
+                    "name": "hdfsreader", Reader名称，固定写法
+                    "parameter": {
+                        "defaultFS": "hdfs://hadoop102:8020", HDFS文件系统
+                        namenode地址
+                        "path": "/base_province", 文件所在路径
+                        "column": [
+                            "*"
+                        ], 需要同步的列，可使用索引选择所需列，例如：
+                        [{"index":0,"type":"long"},{"index":1,"type":"int"}]
+                        标识前两列，["*"]标识所有列。
+                        "fileType": "text", 文件类型，目前支持textfile(text)、
+                        orcfile(orc)、rcfile(rc)、sequence file(seq)和csv。
+                        "compress": "gzip", 压缩类型，目前支持gzip、bz2、zip、
+                        lzo、lzo_deflate、snappy等。
+                        "encoding": "UTF-8", 文件编码
+                        "nullFormat": "\\N", null值存储格式
+                        "fieldDelimiter": "\t", 字段分隔符
+                    }
+                },
+                "writer": {
+                    "name": "mysqlwriter", Writer名称，固定写法
+                    "parameter": {
+                        "username": "root", 数据库用户名
+                        "password": "000000", 数据库密码
+                        "connection": [
+                            {
+                                "table": [
+                                    "test_province" 目标表
+                                ],
+                                "jdbcUrl": "jdbc:mysql://hadoop102:3306
+                                /gmall?useUnicode=true&
+                                characterEncoding=utf-8" JDBC URL
+                            }
+                        ],
+                        "column": [
+                            "id",
+                            "name",
+                            "region_id",
+                            "area_code",
+                            "iso_code",
+                            "iso_3166_2"
+                        ], 目标列
+                        "writeMode": "replace" 写入方式：控制雪茹数据到目标表采用
+                        insert into(insert)或者replace into(replace)或者
+                        ON DUPLICATE KEY UPDATE(update)语句
+                    }
+                }
+            }
+        ],
+        "setting": {
+            "speed": {
+                "channel": 1
+            }
+        }
+    }
+}
+
+DROP TABLE IF EXISTS `test_province`;
+CREATE TABLE `test_province`  (
+  `id` bigint(20) NOT NULL,
+  `name` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `region_id` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `area_code` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `iso_code` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `iso_3166_2` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+

@@ -1,0 +1,85 @@
+1、放入/opt/software
+/opt/software/datax/datax.tar.gz
+
+2、解压到/opt/module
+tar -zxvf datax.tar.gz -C /opt/module/
+
+3、自检，执行如下命令
+python /opt/module/datax/bin/datax.py /opt/module/datax/job/job.json
+
+4、使用
+mysql -> HDFS
+vim /opt/module/datax/job/base_province.json
+
+使用DataX向HDFS同步数据时，需确保目标路径已存在
+hadoop fs -mkdir /base_province/2020-06-14
+
+cd /opt/module/datax
+python bin/datax.py job/base_province.json -p -Ddt=2020-06-14
+python bin/datax.py -p"-Ddt=2020-06-14" job/base_province.json
+
+
+HDFS -> mysql
+vim /opt/module/datax/job/test_province.json
+
+cd /opt/module/datax
+python bin/datax.py job/test_province.json
+
+5、优化
+速度控制:
+参数	                                说明
+job.setting.speed.channel	        并发数
+job.setting.speed.record	        总record限速
+job.setting.speed.byte	            总byte限速
+core.transport.channel.speed.record	单个channel的record限速，默认值为10000（10000条/s）
+core.transport.channel.speed.byte	单个channel的byte限速，默认值1024*1024（1M/s）
+
+注意事项：
+1.若配置了总record限速，则必须配置单个channel的record限速
+2.若配置了总byte限速，则必须配置单个channe的byte限速
+3.若配置了总record限速和总byte限速，channel并发数参数就会失效。因为配置了总record限速和总byte限速之后，实际channel并发数是通过计算得到的：
+计算公式为:
+min(总byte限速/单个channle的byte限速，总record限速/单个channel的record限速)
+
+配置示例：
+{
+    "core": {
+        "transport": {
+            "channel": {
+                "speed": {
+                    "byte": 1048576 //单个channel byte限速1M/s
+                }
+            }
+        }
+    },
+    "job": {
+        "setting": {
+            "speed": {
+                "byte" : 5242880 //总byte限速5M/s
+            }
+        },
+        ...
+    }
+}
+
+内存调整:
+python datax/bin/datax.py --jvm="-Xms8G -Xmx8G" /path/to/your/job.json
+
+6、activity_info为例，全量同步
+vim /opt/module/datax/job/activity_info.json
+
+hadoop fs -mkdir -p /origin_data/gmall/db/activity_info_full/2020-06-14
+cd /opt/module/datax
+python bin/datax.py job/activity_info.json -p"-Dtargetdir=/origin_data/gmall/db/activity_info_full/2020-06-14"
+
+7、自动生成配置文件脚本
+vim gen_import_config.py
+python gen_import_config.py -d gmall -t activity_info
+
+自动生成json文件
+vim gen_import_config.sh
+gen_import_config.sh
+
+每日自动导mysql -> HDFS数据
+vim mysql_to_hdfs_full.sh
+mysql_to_hdfs_full.sh all 2020-06-14

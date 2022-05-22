@@ -1,0 +1,52 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "hdfsreader",
+          "parameter": {
+            "defaultFS": "hdfs://hadoop102:8020",
+            "path": "/base_province",
+            "column": [
+              "*"
+            ],
+            "fileType": "text",
+            "compress": "gzip",
+            "encoding": "UTF-8",
+            "nullFormat": "\\N",
+            "fieldDelimiter": "\t"
+          }
+        },
+        "writer": {
+          "name": "mysqlwriter",
+          "parameter": {
+            "username": "root",
+            "password": "123123",
+            "connection": [
+              {
+                "table": [
+                  "test_province"
+                ],
+                "jdbcUrl": "jdbc:mysql://hadoop102:3306/gmall?useUnicode=true&characterEncoding=utf-8"
+              }
+            ],
+            "column": [
+              "id",
+              "name",
+              "region_id",
+              "area_code",
+              "iso_code",
+              "iso_3166_2"
+            ],
+            "writeMode": "replace"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

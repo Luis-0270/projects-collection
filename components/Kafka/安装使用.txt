@@ -1,0 +1,47 @@
+1、放入/opt/software
+/opt/software/kafka_2.11-2.4.1.tgz
+
+2、解压到/opt/module
+tar -zxvf kafka_2.11-2.4.1.tgz -C /opt/module/
+
+3、改名
+mv kafka_2.11-2.4.1/ kafka
+
+4、修改配置文件
+cd /opt/module/kafka/config/
+vim server.properties
+修改或者增加以下内容：
+#broker的全局唯一编号，不能重复
+broker.id=0
+#删除topic功能使能
+delete.topic.enable=true
+#kafka运行日志存放的路径
+log.dirs=/opt/module/kafka/data
+#配置连接Zookeeper集群地址
+zookeeper.connect=hadoop102:2181,hadoop103:2181,hadoop104:2181/kafka
+
+5、配置环境变量
+sudo vim /etc/profile.d/my_env.sh
+#KAFKA_HOME
+export KAFKA_HOME=/opt/module/kafka
+export PATH=$PATH:$KAFKA_HOME/bin
+
+source /etc/profile.d/my_env.sh
+
+6、分发到hadoop103 hadoop104
+xsync /opt/module/kafka
+
+sudo /home/ludonghua/bin/xsync /etc/profile.d/my_env.sh
+
+source /etc/profile.d/my_env.sh
+
+7、在hadoop103和hadoop104上修改配置文件
+vim /opt/module/kafka/config/server.properties
+修改broker.id=1、broker.id=2
+
+8、启动
+bin/kafka-server-start.sh -daemon /opt/module/kafka/config/server.properties
+
+9、脚本
+kafka.sh
+
