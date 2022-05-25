@@ -1,0 +1,53 @@
+1、放入/opt/software
+/opt/software/phoenix/apache-phoenix-5.0.0-HBase-2.0-bin.tar.gz
+
+2、解压到/opt/module
+tar -zxvf apache-phoenix-5.0.0-HBase-2.0-bin.tar.gz -C /opt/module/
+
+3、改名
+mv /opt/module/apache-phoenix-5.0.0-HBase-2.0-bin /opt/module/phoenix
+
+4、复制server包并拷贝到各个节点的hbase/lib
+cp /opt/module/phoenix/phoenix-5.0.0-HBase-2.0-server.jar /opt/module/hbase/lib/
+xsync /opt/module/hbase/lib/phoenix-5.0.0-HBase-2.0-server.jar
+
+5、配置环境变量
+sudo vim /etc/profile.d/my_env.sh
+# PHOENIX_HOME
+export PHOENIX_HOME=/opt/module/phoenix
+export PHOENIX_CLASSPATH=$PHOENIX_HOME
+export PATH=$PATH:$PHOENIX_HOME/bin
+
+source /etc/profile.d/my_env.sh
+
+6、在 Hbase 家目录下的 conf/hbase-site.xml 文件中添加配置，分发配置文件
+vim /opt/module/hbase/conf/hbase-site.xml
+<property>
+    <name>phoenix.schema.isNamespaceMappingEnabled</name>
+    <value>true</value>
+</property>
+
+<property>
+    <name>phoenix.schema.mapSystemTablesToNamespace</name>
+    <value>true</value>
+</property>
+
+xsync /opt/module/hbase/conf/hbase-site.xml
+
+7、在 Phoenix 家目录下的 bin/hbase-site.xml 文件中添加配置
+vim /opt/module/phoenix/bin/hbase-site.xml
+<property>
+    <name>phoenix.schema.isNamespaceMappingEnabled</name>
+    <value>true</value>
+</property>
+
+<property>
+    <name>phoenix.schema.mapSystemTablesToNamespace</name>
+    <value>true</value>
+</property>
+
+8、启动
+/opt/module/phoenix/bin/sqlline.py hadoop102,hadoop103,hadoop104:2181
+
+
+

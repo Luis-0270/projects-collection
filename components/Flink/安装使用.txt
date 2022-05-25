@@ -1,0 +1,20 @@
+1、放入/opt/software
+/opt/software/flink/flink-1.13.0-bin-scala_2.12.tgz
+
+2、解压到/opt/module
+tar -zxvf flink-1.13.0-bin-scala_2.12.tgz -C /opt/module/
+
+3、本地启动
+cd /opt/module/flink-1.13.0/
+bin/start-cluster.sh
+bin/stop-cluster.sh
+
+4、集群启动
+vim /opt/module/flink-1.13.0/conf/flink-conf.yaml
+# JobManager节点地址
+jobmanager.rpc.address: hadoop102
+
+vim /opt/module/flink-1.13.0/conf/workers
+hadoop103
+hadoop104
+

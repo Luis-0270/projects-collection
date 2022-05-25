@@ -1,0 +1,54 @@
+1、CentOS取消打开文件数限制
+sudo vim /etc/security/limits.conf
+* soft nofile 65536
+* hard nofile 65536
+* soft nproc 131072
+* hard nproc 131072
+
+sudo vim /etc/security/limits.d/20-nproc.conf
+* soft nofile 65536
+* hard nofile 65536
+* soft nproc 131072
+* hard nproc 131072
+
+sudo /home/ludonghua/bin/xsync /etc/security/limits.conf
+sudo /home/ludonghua/bin/xsync /etc/security/limits.d/20-nproc.conf
+
+2、安装依赖
+在hadoop102,hadoop103,hadoop104上都安装
+sudo yum install -y libtool
+
+3、CentOS取消SELINUX
+sudo vim /etc/selinux/config
+SELINUX=disabled
+
+sudo /home/ludonghua/bin/xsync /etc/selinux/config
+
+sudo reboot
+
+4、放入/opt/software
+/opt/software/clickhouse/
+clickhouse-client-20.4.5.36-2.noarch.rpm
+clickhouse-common-static-20.4.5.36-2.x86_64.rpm
+clickhouse-common-static-dbg-20.4.5.36-2.x86_64.rpm
+clickhouse-server-20.4.5.36-2.noarch.rpm
+
+xsync /opt/software/clickhouse/
+
+5、安装
+cd /opt/software/clickhouse/
+sudo rpm -ivh *.rpm
+
+6、修改配置文件
+sudo vim /etc/clickhouse-server/config.xml
+把 <listen_host>::</listen_host> 的注释打开
+
+sudo /home/ludonghua/bin/xsync /etc/clickhouse-server/config.xml
+
+7、启动
+sudo systemctl start clickhouse-server
+三台机器上关闭开机自启
+sudo systemctl disable clickhouse-server
+
+clickhouse-client -m
+

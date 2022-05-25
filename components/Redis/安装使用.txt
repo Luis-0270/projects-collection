@@ -1,0 +1,29 @@
+1、安装C 语言的编译环境
+sudo yum install centos-release-scl scl-utils-build
+sudo yum install -y devtoolset-8-toolchain
+
+# 注意: 执行此命令会自动切换到 root 用户
+sudo scl enable devtoolset-8 bash
+
+2、放入/opt/software
+/opt/software/redis/redis-6.0.8.tar.gz
+
+3、解压到/opt/module
+tar -zxvf redis-6.0.8.tar.gz -C /opt/module/
+
+4、在redis-6.0.8目录下执行make命令（只是编译好）
+yum install gcc-c++ -y
+cd /opt/module/redis-6.0.8/
+make distclean
+make
+跳过make test 继续执行: make install
+
+5、后台启动
+cp /opt/module/redis-6.0.8/redis.conf ~/bin/my_redis.conf
+vim ~/bin/my_redis.conf
+将 daemonize no 改为 daemonize yes
+
+6、启动脚本
+redis.sh
+关闭
+redis-cli shutdown

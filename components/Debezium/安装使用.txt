@@ -1,0 +1,38 @@
+1、放入/opt/software
+/opt/software/debezium/debezium-connector-mysql-1.7.1.Final-plugin.tar.gz
+
+2、解压到/opt/module
+mkdir -p /opt/module/debezium/connector
+tar -zxvf debezium-connector-mysql-1.7.1.Final-plugin.tar.gz -C /opt/module/debezium/connector/
+
+3、打开kafka配置文件connect-distributed.properties 进行配置
+vim /opt/module/kafka/config/connect-distributed.properties
+
+bootstrap.servers=hadoop102:9092,hadoop103:9092,hadoop104:9092
+
+group.id=connect-mysql
+
+key.converter=org.apache.kafka.connect.json.JsonConverter
+value.converter=org.apache.kafka.connect.json.JsonConverter
+
+key.converter.schemas.enable=false
+value.converter.schemas.enable=false
+
+status.storage.topic=connect-mysql-status
+status.storage.replication.factor=2
+
+offset.flush.interval.ms=10000
+
+plugin.path=/opt/module/debezium/connector
+
+4、分发
+xsync /opt/module/debezium/connector
+xsync /opt/module/kafka/config/connect-distributed.properties
+
+5、启动Kafka connector
+/opt/module/kafka/bin/connect-distributed.sh -daemon /opt/module/kafka/config/connect-distributed.properties
+
+6、注册连接器
+curl -i -X POST -H "Accept:application/json" -H "Content-Type:application/json" hadoop102:8083/connectors/ -d '{"name":"ludonghua-mysql-connector","config":{"connector.class":"io.debezium.connector.mysql.MySqlConnector","database.hostname":"hadoop102","database.port":"3306","database.user":"root","database.password":"123123","database.server.id":"184054","database.server.name":"bigdata","database.include.list":"gmall","database.history.kafka.bootstrap.servers":"hadoop102:9092","database.history.kafka.topic":"schema-changes.inventory"}}'
+
+

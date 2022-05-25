@@ -1,0 +1,53 @@
+1、放入/opt/software
+/opt/software/hbase/hbase-2.0.5-bin.tar.gz
+
+2、解压到/opt/module
+tar -zxvf hbase-2.0.5-bin.tar.gz -C /opt/module/
+
+3、改名
+mv /opt/module/hbase-2.0.5 /opt/module/hbase
+
+4、配置环境变量
+sudo vim /etc/profile.d/my_env.sh
+#HBASE_HOME
+export HBASE_HOME=/opt/module/hbase
+export PATH=$PATH:$HBASE_HOME/bin
+
+source /etc/profile.d/my_env.sh
+
+5、修改配置文件
+vim /opt/module/hbase/conf/hbase-env.sh
+export HBASE_MANAGES_ZK=false
+
+vim /opt/module/hbase/conf/hbase-site.xml
+<configuration>
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://hadoop102:8020/hbase</value>
+    </property>
+
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>hadoop102,hadoop103,hadoop104</value>
+    </property>
+</configuration>
+
+vim /opt/module/hbase/conf/regionservers
+hadoop102
+hadoop103
+hadoop104
+
+6、分发
+xsync /opt/module/hbase/
+
+7、启动
+先启动
+zk.sh start
+hadoop.sh start
+start-hbase.sh
+stop-hbase.sh
