@@ -5,10 +5,11 @@ kafka-topics.sh --bootstrap-server hadoop162:9092 --describe --topic first
 
 kafka-topics.sh --bootstrap-server hadoop102:9092 --list
 
-kafka-console-producer.sh --broker-list hadoop162:9092 --topic ods_base_log
+kafka-console-producer.sh --broker-list hadoop102:9092 --topic topic1
 
 kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic ods_base_log --from-beginning
 kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic ods_base_log
 kafka-console-consumer.sh --bootstrap-server hadoop162:9092 --topic topic_log
 
+kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic test
 

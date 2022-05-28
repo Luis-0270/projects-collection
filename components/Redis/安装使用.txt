@@ -21,6 +21,7 @@ make
 5、后台启动
 cp /opt/module/redis-6.0.8/redis.conf ~/bin/my_redis.conf
 vim ~/bin/my_redis.conf
+将 band 改为 0.0.0.0
 将 daemonize no 改为 daemonize yes
 
 6、启动脚本
