@@ -6,6 +6,7 @@ kafka-topics.sh --bootstrap-server hadoop162:9092 --describe --topic first
 kafka-topics.sh --bootstrap-server hadoop102:9092 --list
 
 kafka-console-producer.sh --broker-list hadoop102:9092 --topic topic1
+kafka-console-producer.sh --broker-list hadoop102:9092 --topic test
 
 kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic ods_base_log --from-beginning
 kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic ods_base_log
@@ -13,3 +14,5 @@ kafka-console-consumer.sh --bootstrap-server hadoop162:9092 --topic topic_log
 
 kafka-console-consumer.sh --bootstrap-server hadoop102:9092 --topic test
 
+查看topic每个分区条数
+kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list hadoop102:9092 --topic order_all

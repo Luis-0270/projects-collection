@@ -51,3 +51,26 @@ zk.sh start
 hadoop.sh start
 start-hbase.sh
 stop-hbase.sh
+
+8、使用hbase
+进入到hbase shell
+hbase shell
+查看表
+list
+禁用表和删除表
+disable 'table'
+drop 'table'
+
+创建namespace
+create_namespace 'orders'
+
+创建维度表
+create 'orders:dwd_activity_rule',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+create 'orders:dwd_activity_sku',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+create 'orders:dwd_coupon_info',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+
+创建宽表
+create 'orders:dim_order_details',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+
+扫描
+scan 'orders:dwd_activity_rule'

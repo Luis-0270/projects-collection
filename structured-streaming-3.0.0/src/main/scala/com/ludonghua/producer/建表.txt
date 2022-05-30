@@ -1,0 +1,30 @@
+kafka
+kafka-topics.sh --zookeeper hadoop102:2181/kafka --create --replication-factor 2 --partitions 12 --topic order_all
+kafka-topics.sh --zookeeper hadoop102:2181/kafka --create --replication-factor 2 --partitions 12 --topic order_main
+kafka-topics.sh --zookeeper hadoop102:2181/kafka --create --replication-factor 2 --partitions 12 --topic order_details
+kafka-topics.sh --zookeeper hadoop102:2181/kafka --create --replication-factor 2 --partitions 12 --topic preferential_activities
+kafka-topics.sh --zookeeper hadoop102:2181/kafka --create --replication-factor 2 --partitions 12 --topic coupon
+kafka-topics.sh --zookeeper hadoop102:2181/kafka --create --replication-factor 2 --partitions 12 --topic preferential_activities
+
+hbase
+进入到hbase shell
+hbase shell
+查看表
+list
+禁用表和删除表
+disable 'table'
+drop 'table'
+
+创建namespace
+create_namespace 'orders'
+
+创建维度表
+create 'orders:dwd_activity_rule',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+create 'orders:dwd_activity_sku',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+create 'orders:dwd_coupon_info',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+
+创建宽表
+create 'orders:dim_order_details',{NAME=>'info',VERSIONS => '3', TTL => 'FOREVER'},{NUMREGIONS => 15, SPLITALGO => 'HexStringSplit'}
+
+扫描
+scan 'orders:dwd_activity_rule'

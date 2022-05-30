@@ -13,15 +13,15 @@
         <module>auto-press-key</module>
         <module>flink-1.13</module>
         <module>structured-streaming-2.4.3</module>
+        <module>structured-streaming-3.0.0</module>
     </modules>
 
     <properties>
         <java.version>1.8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <spark.version>2.4.0</spark.version>
+        <spark.version>3.0.0</spark.version>
         <scala.version>2.12</scala.version>
-        <kafka.version>1.0.0</kafka.version>
         <flink.version>1.12.0</flink.version>
         <hadoop.version>3.1.3</hadoop.version>
     </properties>
@@ -78,22 +78,15 @@
                 <artifactId>spark-streaming_${scala.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
-
-            <!--kafka-->
             <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-clients</artifactId>
-                <version>${kafka.version}</version>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-sql-kafka-0-10_${scala.version}</artifactId>
+                <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-streaming-kafka-0-10_${scala.version}</artifactId>
                 <version>${spark.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.flink</groupId>
-                <artifactId>flink-connector-kafka_${scala.version}</artifactId>
-                <version>${flink.version}</version>
             </dependency>
 
             <!--redis-->
@@ -127,15 +120,17 @@
                 <artifactId>mysql-connector-java</artifactId>
                 <version>5.1.47</version>
             </dependency>
+
+            <!--hbase-->
             <dependency>
-                <groupId>com.alibaba.ververica</groupId>
-                <artifactId>flink-connector-mysql-cdc</artifactId>
-                <version>1.2.0</version>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-server</artifactId>
+                <version>2.2.4</version>
             </dependency>
             <dependency>
-                <groupId>com.ververica</groupId>
-                <artifactId>flink-connector-mysql-cdc</artifactId>
-                <version>2.1.0</version>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>2.2.4</version>
             </dependency>
 
             <!--phoenix-->
@@ -206,6 +201,21 @@
                 <artifactId>flink-table-planner-blink_${scala.version}</artifactId>
                 <version>${flink.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-connector-kafka_${scala.version}</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.ververica</groupId>
+                <artifactId>flink-connector-mysql-cdc</artifactId>
+                <version>1.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ververica</groupId>
+                <artifactId>flink-connector-mysql-cdc</artifactId>
+                <version>2.1.0</version>
+            </dependency>
 
             <!--hadoop-->
             <!--如果保存检查点到hdfs上，需要引入此依赖-->
@@ -261,14 +271,6 @@
                 <version>2012_u6</version>
             </dependency>
 
-            <!--flume-->
-            <dependency>
-                <groupId>org.apache.flume</groupId>
-                <artifactId>flume-ng-core</artifactId>
-                <version>1.9.0</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
-
 </project>
