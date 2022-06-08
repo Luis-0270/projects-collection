@@ -1,0 +1,15 @@
+1、放入/opt/software
+/opt/software/elasticsearch/kibana-6.6.0-linux-x86_64.tar.gz
+
+2、解压到/opt/module
+tar -zxvf kibana-6.6.0-linux-x86_64.tar.gz -C /opt/module/
+
+3、修改配置文件
+vim /opt/module/kibana-6.6.0-linux-x86_64/config/kibana.yml
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://hadoop102:9200"]
+
+4、启动
+/opt/module/kibana-6.6.0-linux-x86_64/bin/kibana
+
+

@@ -1,0 +1,41 @@
+1、放入/opt/software
+/opt/software/elasticsearch/elasticsearch-6.6.0.tar.gz
+
+2、解压到/opt/module
+tar -zxvf elasticsearch-6.6.0.tar.gz -C /opt/module/
+
+3、修改配置文件
+vim /opt/module/elasticsearch-6.6.0/config/elasticsearch.yml
+cluster.name: my-es
+node.name: node-1
+network.host: hadoop102
+bootstrap.memory_lock: false
+bootstrap.system_call_filter: false
+discovery.zen.ping.unicast.hosts: ["hadoop102", "hadoop103"]
+
+vim /opt/module/elasticsearch-6.6.0/config/jvm.options
+-Xms256m
+-Xmx256m
+
+4、修改linux配置
+sudo vim /etc/security/limits.conf
+* soft nofile 65536
+* hard nofile 131072
+* soft nproc 2048
+* hard nproc 65536
+
+sudo vim /etc/sysctl.conf
+vm.max_map_count=262144
+
+5、全部分发
+vim /opt/module/elasticsearch-6.6.0/config/elasticsearch.yml
+node.name: node-x
+network.host: hadoop10x
+
+6、测试
+curl http://hadoop102:9200/_cat/nodes?v
+
+
+
+
+

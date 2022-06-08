@@ -1,0 +1,14 @@
+启动任务
+bin/flink -c com.ludonghua.WordCount xxx.jar
+
+保存SavePoint
+bin/flink savepoint JobId(xxxxxxxxxxxxx) hdfs://hadoop102:8020/flink/save
+
+关闭任务并从SavePoint恢复任务
+bin/flink -s hdfs://hadoop102:8020/flink/save/xxxxxx -c com.ludonghua.WordCount xxx.jar
+
+从CK位置恢复数据
+//正常Cancel任务时,保留最后一次CK
+env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+
+bin/flink -s hdfs://hadoop102:8020/flink/ck/Jobid/chk-xxx -c com.ludonghua.WordCount xxx.jar
