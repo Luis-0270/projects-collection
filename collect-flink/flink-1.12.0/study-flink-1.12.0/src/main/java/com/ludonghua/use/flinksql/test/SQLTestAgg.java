@@ -1,0 +1,46 @@
+package com.ludonghua.use.flinksql.test;
+
+import com.ludonghua.common.utils.ExecutionEnvUtil;
+import com.ludonghua.use.bean.WaterSensor;
+import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
+import org.apache.flink.types.Row;
+
+/**
+ * Author Luis
+ * DATE 2022-06-19 22:05
+ */
+public class SQLTestAgg {
+    public static void main(String[] args) throws Exception {
+
+        // 1、获取流执行环境
+        ParameterTool parameterTool = ExecutionEnvUtil.createParameterTool(args, "/application.properties");
+        StreamExecutionEnvironment env = ExecutionEnvUtil.createEnv(parameterTool, false);
+        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+
+        // 2、读取端口数据创建流并转换为JavaBean
+        SingleOutputStreamOperator<WaterSensor> waterSensorDS = env.socketTextStream("hadoop102", 9999)
+                .map(data -> {
+                    String[] split = data.split(",");
+                    return new WaterSensor(split[0],
+                            Long.parseLong(split[1]),
+                            Integer.parseInt(split[2]));
+                });
+
+        // 3、将流进行表注册
+        tableEnv.createTemporaryView("sensor", waterSensorDS);
+
+        // 4、使用SQL查询注册的表
+        Table result = tableEnv.sqlQuery("select id,count(ts) ct,sum(vc) vc_sum from sensor group by id");
+
+        // 5、将表对象转换为流进行打印输出
+        tableEnv.toRetractStream(result, Row.class).print();
+
+        // 6、执行
+        env.execute();
+
+    }
+}
