@@ -1,4 +1,4 @@
-package com.ludonghua.use.flinksql.tableapi;
+package com.ludonghua.use.flinksql.SQL.overwindow;
 
 import com.ludonghua.common.utils.ExecutionEnvUtil;
 import com.ludonghua.use.bean.WaterSensor;
@@ -7,6 +7,7 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.Over;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.Tumble;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
@@ -21,7 +22,7 @@ import static org.apache.flink.table.api.Expressions.lit;
  * Author Luis
  * DATE 2022-06-20 00:21
  */
-public class GroupWindowTumblingWindowEventTime {
+public class OverWindowEventTime {
     public static void main(String[] args) throws Exception {
         // 1、获取流执行环境
         ParameterTool parameterTool = ExecutionEnvUtil.createParameterTool(args, "/application.properties");
@@ -52,12 +53,9 @@ public class GroupWindowTumblingWindowEventTime {
                 $("vc"),
                 $("rt").rowtime());
 
-        // 4、基于时间时间的滚动窗口
-        Table result = table.window(Tumble.over(lit(5).seconds())
-                .on($("rt"))
-                .as("tw"))
-                .groupBy($("id"), $("tw"))
-                .select($("id"), $("id").count());
+        // 4、基于事件时间的Over窗口
+        Table result = table.window(Over.partitionBy($("id")).orderBy($("rt")).as("ow"))
+                .select($("id"),$("id").count().over($("ow")));
 
         // 5、将结果转换成流输出
         tableEnv.toAppendStream(result, Row.class).print();

@@ -1,23 +1,23 @@
-package com.ludonghua.use.flinksql.tableapi;
+package com.ludonghua.use.flinksql.tableapi.overwindow;
 
 import com.ludonghua.common.utils.ExecutionEnvUtil;
 import com.ludonghua.use.bean.WaterSensor;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.Over;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.Tumble;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 import static org.apache.flink.table.api.Expressions.$;
-import static org.apache.flink.table.api.Expressions.lit;
+import static org.apache.flink.table.api.Expressions.rowInterval;
 
 /**
  * Author Luis
- * DATE 2022-06-20 00:21
+ * DATE 2022-06-20 23:38
  */
-public class GroupWindowTumblingWindowProcessTime {
+public class OverWindowBounded {
     public static void main(String[] args) throws Exception {
         // 1、获取流执行环境
         ParameterTool parameterTool = ExecutionEnvUtil.createParameterTool(args, "/application.properties");
@@ -40,12 +40,14 @@ public class GroupWindowTumblingWindowProcessTime {
                 $("vc"),
                 $("pt").proctime());
 
-        // 4、开滚动窗口计算WordCount
-        Table result = table.window(Tumble.over(lit(5).seconds())
-                .on($("pt"))
-                .as("tw"))
-                .groupBy($("id"), $("tw"))
-                .select($("id"), $("id").count());
+        // 4、开启Over往前无界窗口
+        Table result = table.window(Over
+                .partitionBy($("id"))
+                .orderBy($("pt"))
+                .preceding(rowInterval(2L))
+                .as("ow"))
+                .select($("id"),
+                        $("vc").sum().over($("ow")));
 
         // 5、将结果转换成流输出
         tableEnv.toAppendStream(result, Row.class).print();

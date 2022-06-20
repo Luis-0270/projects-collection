@@ -1,22 +1,24 @@
-package com.ludonghua.use.flinksql.tableapi;
+package com.ludonghua.use.flinksql.tableapi.groupwindow;
 
 import com.ludonghua.common.utils.ExecutionEnvUtil;
 import com.ludonghua.use.bean.WaterSensor;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.Session;
 import org.apache.flink.table.api.Slide;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
-import static org.apache.flink.table.api.Expressions.*;
+import static org.apache.flink.table.api.Expressions.$;
+import static org.apache.flink.table.api.Expressions.lit;
 
 /**
  * Author Luis
  * DATE 2022-06-20 00:21
  */
-public class GroupWindowSlidingWindowCount {
+public class GroupWindowSessionWindowProcessTime {
     public static void main(String[] args) throws Exception {
         // 1、获取流执行环境
         ParameterTool parameterTool = ExecutionEnvUtil.createParameterTool(args, "/application.properties");
@@ -40,11 +42,10 @@ public class GroupWindowSlidingWindowCount {
                 $("pt").proctime());
 
         // 4、开滚动窗口计算WordCount
-        Table result = table.window(Slide.over(rowInterval(5L))
-                .every(rowInterval(2L))
+        Table result = table.window(Session.withGap(lit(5).seconds())
                 .on($("pt"))
-                .as("cw"))
-                .groupBy($("id"), $("cw"))
+                .as("sw"))
+                .groupBy($("id"), $("sw"))
                 .select($("id"), $("id").count());
 
         // 5、将结果转换成流输出
