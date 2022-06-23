@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.ludonghua</groupId>
-            <artifactId>commons-projects-collection</artifactId>
+            <artifactId>collect-commons</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

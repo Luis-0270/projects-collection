@@ -1,6 +1,6 @@
-package com.ludonghua.flume.interceptor;
+package java.com.ludonghua.flume.interceptor;
 
-import com.ludonghua.flume.utils.JSONUtil;
+import com.ludonghua.common.utils.JSONUtil;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;

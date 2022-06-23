@@ -9,18 +9,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>commons-projects-collection</artifactId>
+    <artifactId>frameworks-code</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>flume-1.9.0</module>
+        <module>auto-press-key</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-        </dependency>
-    </dependencies>
 
 </project>

@@ -1,4 +1,4 @@
-package com.ludonghua.flume.utils;
+package com.ludonghua.common.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
@@ -9,11 +9,9 @@ import com.alibaba.fastjson.JSONException;
 public class JSONUtil {
     public static boolean isJSONValidate(String log){
         try {
-            JSON.parseObject(log);
-            return true;
+            return JSON.parseObject(log) != null;
         }catch (JSONException e){
             return false;
         }
     }
 }
-
