@@ -11,11 +11,10 @@
     <modules>
         <module>flume-1.9</module>
         <module>auto-press-key</module>
-        <module>flink-1.13</module>
-        <module>structured-streaming-2.4.3</module>
-        <module>structured-streaming-3.0.0</module>
         <module>commons-projects-collection</module>
         <module>collect-flink/flink-1.12.0</module>
+        <module>collect-spark/spark-2.4.3</module>
+        <module>collect-spark/spark-3.0.0</module>
     </modules>
 
     <properties>
@@ -43,6 +42,23 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>5.1.47</version>
+            </dependency>
+
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>3.3.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-server</artifactId>
+                <version>2.2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>2.2.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
